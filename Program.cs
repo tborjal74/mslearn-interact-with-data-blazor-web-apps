@@ -1,19 +1,40 @@
+using System.Globalization;
 using BlazingPizza.Data;
 using BlazingPizza.Services;
+using Microsoft.Extensions.Options;
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddLocalization();
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 builder.Services.AddHttpClient();
 builder.Services.AddSqlite<PizzaStoreContext>("Data Source=pizza.db");
 builder.Services.AddScoped<OrderState>();
 
+builder.Services.Configure<RequestLocalizationOptions>(options =>
+{
+    var supportedCultures = new[]
+    {
+
+        new CultureInfo("fil-PH")  // Filipino (Philippines)
+    };
+
+    options.DefaultRequestCulture = new Microsoft.AspNetCore.Localization.RequestCulture("fil-PH");
+    options.SupportedCultures = supportedCultures;
+    options.SupportedUICultures = supportedCultures;
+});
 
 var app = builder.Build();
 
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error");
+}
+
+var localizationOptions = app.Services.GetService<IOptions<RequestLocalizationOptions>>()?.Value;
+if (localizationOptions != null)
+{
+    app.UseRequestLocalization(localizationOptions);
 }
 
 app.UseStaticFiles();
